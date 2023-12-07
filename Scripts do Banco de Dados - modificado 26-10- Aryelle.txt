@@ -1,0 +1,264 @@
+CREATE TABLE pessoa (
+	CPF varchar(15),
+	nome VARCHAR (50),
+	email varchar(15),
+	rua varchar(15),
+	numero INT,
+    bairro varchar(15),
+    cidade varchar(15),
+    UF varchar(2),
+	
+	PRIMARY KEY (CPF)
+	
+);
+
+CREATE TABLE telefone (
+    CPF_pessoa varchar(15),
+    numero_telefone int,  
+    PRIMARY KEY (CPF_pessoa, numero_telefone),
+    CONSTRAINT refCPF
+    FOREIGN KEY (CPF_pessoa) REFERENCES pessoa (CPF) 
+    ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+
+CREATE TABLE cliente (
+	ID_cliente INT,
+	CPF_pessoa varchar(15),
+	
+	PRIMARY KEY (ID_cliente),
+	CONSTRAINT refCPF_pessoa 
+    FOREIGN KEY (CPF_pessoa) REFERENCES pessoa (CPF) 
+	ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE gerente (
+	ID_gerente INT, 
+	CPF_pessoa varchar(15),
+    CTPS int,
+    DataDeAdmissao date,
+    Salario double,
+	
+	PRIMARY KEY (ID_Gerente),
+	CONSTRAINT refCPF_chave
+    FOREIGN KEY (CPF_pessoa) REFERENCES pessoa (CPF) 
+	ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE casaDeShow (
+	ID_casaDeShow int,
+	nome VARCHAR (50),
+	rua varchar(15),
+	numero INT,
+    bairro varchar(15),
+    cidade varchar(15),
+    UF varchar(2),
+	
+	PRIMARY KEY (ID_casaDeShow)
+	
+);
+
+ALTER TABLE casadeshow RENAME TO casaDeShow;
+ALTER TABLE casadeshow MODIFY ID_casaDeShow INT;
+
+CREATE TABLE evento (
+	ID_evento INT, 
+    nome varchar(20),
+    dataDaRealizacao date,
+	ID_casaDeShow int,
+	
+	PRIMARY KEY (ID_evento),
+	CONSTRAINT refID_casaDeShow 
+    FOREIGN KEY (ID_casaDeShow) REFERENCES casaDeShow (ID_casaDeShow) 
+	ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE clienteEvento(
+	ID_cliente INT,
+	ID_evento INT,
+	
+	PRIMARY KEY (ID_cliente, ID_evento),
+	
+	CONSTRAINT refID_cliente
+	FOREIGN KEY (ID_cliente) REFERENCES cliente (ID_cliente)
+	ON UPDATE CASCADE ON DELETE RESTRICT,
+	
+	CONSTRAINT refID_evento
+	FOREIGN KEY (ID_evento) REFERENCES evento (ID_evento)
+	ON UPDATE CASCADE ON DELETE RESTRICT
+
+);
+
+CREATE TABLE ingresso (
+	ID_ingresso INT, 
+	descricao varchar(200),
+    valor double,
+    ID_gerente int,
+	
+	PRIMARY KEY (ID_ingresso),
+	CONSTRAINT refcodGerente
+    FOREIGN KEY (ID_gerente) REFERENCES gerente (ID_gerente) 
+	ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE eventoIngresso(
+	ID_evento INT,
+	ID_ingresso INT,
+	
+	PRIMARY KEY (ID_evento, ID_ingresso),
+	
+	CONSTRAINT refcodEvento
+	FOREIGN KEY (ID_evento) REFERENCES evento (ID_evento)
+	ON UPDATE CASCADE ON DELETE RESTRICT,
+	
+	CONSTRAINT refID_ingresso
+	FOREIGN KEY (ID_ingresso) REFERENCES ingresso (ID_ingresso)
+	ON UPDATE CASCADE ON DELETE RESTRICT
+
+);
+
+CREATE TABLE lote(
+	ID_lote INT,
+	numeroFixoDeIngressos INT,
+	
+	PRIMARY KEY (ID_lote)
+
+);
+
+CREATE TABLE loteIngresso(
+	ID_lote INT,
+	ID_ingresso INT,
+	
+	PRIMARY KEY (ID_lote, ID_ingresso),
+	
+	CONSTRAINT refIdLote
+	FOREIGN KEY (ID_lote) REFERENCES lote (ID_lote)
+	ON UPDATE CASCADE ON DELETE RESTRICT,
+	
+	CONSTRAINT refcodIngresso
+	FOREIGN KEY (ID_ingresso) REFERENCES ingresso (ID_ingresso)
+	ON UPDATE CASCADE ON DELETE RESTRICT
+
+);
+
+
+CREATE TABLE compra(
+	ID_compra INT,
+    dataDaCompra date,
+    numeroDeIngressos int,
+    valorDaCompra double,
+	
+	PRIMARY KEY (ID_compra)
+
+);
+
+CREATE TABLE compraIngresso(
+	ID_compra INT,
+	ID_ingresso INT,
+	
+	PRIMARY KEY (ID_compra, ID_ingresso),
+	
+	CONSTRAINT refIdCompra
+	FOREIGN KEY (ID_compra) REFERENCES compra (ID_compra)
+	ON UPDATE CASCADE ON DELETE RESTRICT,
+	
+	CONSTRAINT refIdIngresso
+	FOREIGN KEY (ID_ingresso) REFERENCES ingresso (ID_ingresso)
+	ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE pontoDeVenda(
+	ID_compraPresencial INT,
+	login varchar(50),
+    s	enha varchar (15),
+	rua varchar(15),
+	numero INT,
+    bairro varchar(15),
+    cidade varchar(15),
+    UF varchar(2),
+    ID_gerente int,
+    ID_compra int,
+	
+	PRIMARY KEY (ID_compraPresencial),
+	
+	CONSTRAINT refIdGerente
+	FOREIGN KEY (ID_gerente) REFERENCES gerente (ID_gerente)
+	ON UPDATE CASCADE ON DELETE RESTRICT,
+    
+    CONSTRAINT refId_Compra
+	FOREIGN KEY (ID_compra) REFERENCES compra (ID_compra)
+	ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+
+CREATE TABLE site(
+	ID_compraOnline INT,
+	valorTaxa double,
+    emailComfirmacao varchar(50),
+    ID_compra int ,
+	
+	PRIMARY KEY (ID_compraOnline),
+	
+	CONSTRAINT refcodCompra
+	FOREIGN KEY (ID_compra) REFERENCES compra (ID_compra)
+	ON UPDATE CASCADE ON DELETE RESTRICT
+	
+);
+
+CREATE TABLE FormaDePagamento(
+	ID_formaDePagamento INT,
+	ID_compraOnline int ,
+	
+	PRIMARY KEY (ID_formaDePagamento),
+	
+	CONSTRAINT refIdCompraOnline
+	FOREIGN KEY (ID_compraOnline) REFERENCES site (ID_compraOnline)
+	ON UPDATE CASCADE ON DELETE RESTRICT
+	
+);
+
+CREATE TABLE FormaDePagamentoPontoDeVenda(
+	ID_formaDePagamento INT,
+	ID_compraPresencial int ,
+	
+	PRIMARY KEY (ID_formaDePagamento,ID_compraPresencial),
+	
+	CONSTRAINT refIdFormaDePagamento
+	FOREIGN KEY (ID_formaDePagamento) REFERENCES formadepagamento (ID_formaDePagamento)
+	ON UPDATE CASCADE ON DELETE RESTRICT,
+    
+    CONSTRAINT refIdCompraPresencial
+	FOREIGN KEY (ID_compraPresencial) REFERENCES pontodevenda (ID_compraPresencial)
+	ON UPDATE CASCADE ON DELETE RESTRICT
+	
+);
+
+CREATE TABLE pix(
+	autenticação int,
+    ID_formaDePagamento int ,
+	
+	
+	CONSTRAINT refId_formaDePagamento
+	FOREIGN KEY (ID_formaDePagamento) REFERENCES formadepagamento (ID_formaDePagamento)
+	ON UPDATE CASCADE ON DELETE RESTRICT
+	
+);
+
+CREATE TABLE cartao(
+	tipo varchar(20),
+    numeroDoCartao int ,
+    validade boolean,
+    nomeDoTitular varchar(50),
+    cahveDeSeguranca varchar(20),
+    ID_formaDePagamento int ,
+	
+	
+	CONSTRAINT refcodIdFormaDePagamento
+	FOREIGN KEY (ID_formaDePagamento) REFERENCES formadepagamento (ID_formaDePagamento)
+	ON UPDATE CASCADE ON DELETE RESTRICT
+	
+);
+
+
+
+
